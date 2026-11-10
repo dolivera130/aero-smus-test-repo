@@ -1,0 +1,104 @@
+{
+  "JobName": "VisualFlow_RevenueByRegion",
+  "formInput": {
+    "FileName": "VisualFlow_RevenueByRegion",
+    "ContentType": "text/x-python",
+    "Body": "import sys\nfrom pyspark.context import SparkContext\nfrom pyspark.sql import SparkSession\nfrom pyspark.sql.functions import avg, max, min, sum, count\n\nsc = SparkContext.getOrCreate()\nspark = SparkSession.builder.getOrCreate()\n\n# Script generated for node CatalogDataSource\nCatalogDataSource_1794327828637 = spark.sql(\"select * from `orders_analytics_db`.`sales_raw`\")\n\r# Script generated for node AggregateTransform\nAggregateTransform_1794327918188 = CatalogDataSource_1794327828637.groupBy(\"region\").agg(sum(\"total_amount\").alias(\"revenue\"))\n\rdef get_table_columns(spark, database_name, table_name):\n    schema_df = spark.sql(f\"DESCRIBE `{database_name}`.`{table_name}`\").collect()\n    # Check if '# Partition Information' is present\n    partition_info_exists = any(row.col_name == '# Partition Information' for row in schema_df)\n    if partition_info_exists:\n        # Find the index where partition information starts\n        partition_index = next(i for i, row in enumerate(schema_df) if row.col_name == '# Partition Information')\n        all_columns = [row.col_name for row in schema_df[:partition_index] if row.col_name]\n    else:\n        all_columns = [row.col_name for row in schema_df if row.col_name]\n    return all_columns\n# Script generated for node CatalogDataSink\nall_columns = get_table_columns(spark, \"orders_analytics_db\", \"revenue_by_region\")\n# enforce the column number and column order by getting all column names from DESCRIBE TABLE query and doing a select first.\nassert len(AggregateTransform_1794327918188.columns) == len(all_columns), \"the input df has different col number than the target catalog table.\"\nAggregateTransform_1794327918188.select(all_columns).write.insertInto(\"`orders_analytics_db`.`revenue_by_region`\")\n"
+  },
+  "bucketName": "amazon-sagemaker-397303793007-us-east-2-f306003b275a",
+  "JobUpdate": {
+    "Timeout": 480,
+    "WorkerType": "G.1X",
+    "NumberOfWorkers": 10,
+    "GlueVersion": "6.0",
+    "Name": "VisualFlow_RevenueByRegion",
+    "MaxRetries": 0,
+    "Role": "arn:aws:iam::397303793007:role/datazone_usr_role_b8khvqxw663h61_b2fdswmyr71ovd",
+    "JobMode": "VISUAL",
+    "JobRunQueuingEnabled": false,
+    "ExecutionProperty": {
+      "MaxConcurrentRuns": 1
+    },
+    "ExecutionClass": "STANDARD",
+    "NonOverridableArguments": {},
+    "Connections": {
+      "Connections": [
+        "datazone-glue-network-connection-subnet-0efb5815f19369507-b8khvqxw663h61-dev",
+        "datazone-glue-network-connection-subnet-06fa0b277aa6ca829-b8khvqxw663h61-dev"
+      ]
+    },
+    "DefaultArguments": {
+      "--job-language": "python",
+      "--TempDir": "s3://amazon-sagemaker-397303793007-us-east-2-f306003b275a/dzd-awaivltl69yctl/b8khvqxw663h61/sys/glue/temp/",
+      "--enable-metrics": "true",
+      "--enable-observability-metrics": "false",
+      "--enable-continuous-cloudwatch-log": "false",
+      "--spark-event-logs-path": "s3://amazon-sagemaker-397303793007-us-east-2-f306003b275a/dzd-awaivltl69yctl/b8khvqxw663h61/sys/glue/spark/",
+      "--enable-glue-datacatalog": "true",
+      "--enable-spark-ui": "true",
+      "--enable-auto-scaling": "true",
+      "--smus-job-compute": "project.spark.compatibility",
+      "--smus-orig-asset": "jobs/VisualFlow_RevenueByRegion/VisualFlow_RevenueByRegion.vetl",
+      "--conf": "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions --conf spark.datasource.redshift.community.glue_endpoint=https://glue.us-east-2.amazonaws.com --conf spark.datasource.redshift.community.data_api_endpoint=https://redshift-data.us-east-2.amazonaws.com --conf spark.driver.maxResultSize=0 --conf spark.sql.catalog.spark_catalog=org.apache.iceberg.spark.SparkSessionCatalog --conf spark.sql.catalog.spark_catalog.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog --conf spark.sql.catalog.spark_catalog.glue.id=397303793007 --conf spark.sql.catalog.spark_catalog.glue.account-id=397303793007 --conf spark.sql.catalog.spark_catalog.glue.endpoint=https://glue.us-east-2.amazonaws.com --conf spark.sql.catalog.spark_catalog.client.region=us-east-2 --conf spark.hadoop.fs.s3.credentialsResolverClass=com.amazonaws.glue.accesscontrol.AWSLakeFormationCredentialResolver --conf spark.hadoop.fs.s3.useDirectoryHeaderAsFolderObject=true --conf spark.hadoop.fs.s3.folderObject.autoAction.disabled=true --conf spark.sql.catalog.createDirectoryAfterTable.enabled=true --conf spark.sql.catalog.dropDirectoryBeforeTable.enabled=true --conf spark.sql.catalog.spark_catalog.glue.lakeformation-enabled=true --conf spark.sql.catalog.skipLocationValidationOnCreateTable.enabled=true --conf spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener --conf spark.openlineage.transport.type=amazon_datazone_api --conf spark.openlineage.transport.domainId=dzd-awaivltl69yctl --conf spark.openlineage.columnLineage.datasetLineageEnabled=True --conf spark.openlineage.facets.custom_environment_variables=[AWS_DEFAULT_REGION;GLUE_VERSION;GLUE_COMMAND_CRITERIA;GLUE_PYTHON_VERSION;] --conf spark.glue.accountId=397303793007 --conf spark.glue.JOB_NAME=VisualFlow_RevenueByRegion",
+      "--custom-logGroup-prefix": "datazone-b8khvqxw663h61-dev",
+      "author": "diegoli",
+      "--enable-lakeformation-fine-grained-access": "false"
+    },
+    "connection": {
+      "configurations": [
+        {
+          "classification": "GlueDefaultArgument",
+          "properties": {
+            "--enable-lakeformation-fine-grained-access": "false"
+          }
+        }
+      ],
+      "domainIdentifier": "dzd-awaivltl69yctl",
+      "projectIdentifier": "b8khvqxw663h61",
+      "environmentIdentifier": "b2fdswmyr71ovd",
+      "connectionIdentifier": "dmi3pxrqvklh2h",
+      "name": "project.spark.compatibility",
+      "displayType": "Glue (Spark)",
+      "type": "SPARK",
+      "authorizationMode": "PROJECT",
+      "provisioningType": "MANAGED",
+      "createdAt": "2026-10-28T04:33:09.247Z",
+      "updatedAt": "2026-10-28T04:33:09.247Z",
+      "location": {
+        "awsRegion": "us-east-2",
+        "awsAccountId": "397303793007"
+      },
+      "physicalEndpoints": [
+        {
+          "awsLocation": {
+            "awsAccountId": "397303793007",
+            "awsRegion": "us-east-2"
+          },
+          "glueConnectionName": "datazone-glue-network-connection-subnet-0efb5815f19369507-b8khvqxw663h61-dev",
+          "glueConnectionNames": [
+            "datazone-glue-network-connection-subnet-0efb5815f19369507-b8khvqxw663h61-dev",
+            "datazone-glue-network-connection-subnet-06fa0b277aa6ca829-b8khvqxw663h61-dev"
+          ]
+        }
+      ],
+      "sparkGlueProperties": {
+        "glueConnection": {},
+        "sessionConfigs": {
+          "idle_timeout": 60,
+          "glue_version": "5.0",
+          "worker_type": "G.1X",
+          "number_of_workers": 10
+        }
+      }
+    },
+    "Command": {
+      "Name": "glueetl",
+      "ScriptLocation": "s3://amazon-sagemaker-397303793007-us-east-2-f306003b275a/dzd-awaivltl69yctl/b8khvqxw663h61/shared/jobs/VisualFlow_RevenueByRegion/VisualFlow_RevenueByRegion.py",
+      "PythonVersion": "3.9"
+    },
+    "Tags": {
+      "AmazonDataZoneProject": "b8khvqxw663h61",
+      "AmazonDataZoneUsername": "diegoli"
+    }
+  }
+}
